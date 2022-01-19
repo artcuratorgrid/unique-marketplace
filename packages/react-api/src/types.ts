@@ -19,8 +19,11 @@ export interface ApiState {
   apiDefaultTxSudo: SubmittableExtrinsicFunction;
   hasInjectedAccounts: boolean;
   isApiReady: boolean;
+  isKusamaApiReady: boolean;
   isDevelopment: boolean;
   isEthereum: boolean;
+  specName: string;
+  specVersion: string;
   systemChain: string;
   systemName: string;
   systemVersion: string;
@@ -28,10 +31,15 @@ export interface ApiState {
 
 export interface ApiProps extends ApiState {
   api: ApiPromise;
+  kusamaApi: ApiPromise;
   apiError: string | null;
+  apiUrl?: string;
   extensions?: InjectedExtension[];
   isApiConnected: boolean;
   isApiInitialized: boolean;
+  isElectron: boolean;
+  isKusamaApiConnected: boolean;
+  isKusamaApiInitialized: boolean;
   isWaitingInjected: boolean;
 }
 

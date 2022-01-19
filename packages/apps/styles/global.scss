@@ -24,6 +24,13 @@ body {
 .ui.popup {
   background: var(--bg-page) !important;
 
+  a{
+    color: unset;
+    cursor: pointer;
+    text-decoration: underline;
+  }
+
+
   &:before,
   &:after {
     background: var(--bg-page) !important;
@@ -79,6 +86,9 @@ hr {
   }
 
   .actions {
+    .ui--Button-Group {
+      display: flex;
+    }
     .ui--Button {
       background: var(--link-color);
       color: var(--text-color);
@@ -276,11 +286,11 @@ h4.ui.header {
   color: var(--text-color);
 
   &:after {
-    left: 40%;
+    left: calc(50% - 18px);
   }
 
   &:before {
-    left: 40%;
+    left: calc(50% - 18px);
   }
 
   .load-more {
@@ -445,18 +455,23 @@ form {
   padding: 1rem var(--gap);
 }
 
-button.ui.button,
-.button-link {
+button.ui.button,.ui--Button,.button-link {
   display: flex;
   justify-content: center;
   align-items: center;
   height: 40px;
   background-color: var(--link-color) !important;
   padding: calc(var(--gap) / 2) calc(var(--gap) * 1.5) !important;
-  color: var(--white-color) !important;
+  color: var(--white-color);
   font: 500 16px/24px var(--font-roboto) !important;
   letter-spacing: 0.11em;
   border-radius: var(--bradius) !important;
+  &.ui.secondary.button {
+    background-color: var(--white);
+    border: 1px solid var(--link-color);
+    color: var(--link-color);
+  }
+
 }
 
 .button-link {
@@ -542,14 +557,17 @@ button.ui.button,
 
 .go-back {
   display: flex;
-  flex-direction: row;
-  grid-column-gap: 10px;
-  align-items: center;
-  color: var(--card-link-color) !important;
-  font-style: normal;
-  font-weight: 500;
-  font-size: 16px;
-  line-height: 24px;
+  a {
+    display: flex;
+    flex-direction: row;
+    grid-column-gap: 10px;
+    align-items: center;
+    color: var(--card-link-color) !important;
+    font-style: normal;
+    font-weight: 500;
+    font-size: 16px;
+    line-height: 24px;
+  }
 }
 
 .app-header {
@@ -691,7 +709,7 @@ button.ui.button,
           }
         }
 
-        img {
+        /* img {
           position: absolute;
           &.search-icon {
             left: var(--gap);
@@ -703,13 +721,13 @@ button.ui.button,
             right: var(--gap);
             top: calc(var(--gap) / 2);
           }
-        }
+        } */
 
-        input {
+        /* input {
           border-radius: 4px;
           padding-right: 4rem !important;
           height: 40px;
-        }
+        } */
       }
     }
   }

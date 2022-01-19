@@ -8,6 +8,10 @@
   min-height: 100vh;
 }
 
+a {
+  color: var(--link-color);
+}
+
 .app-header {
   background: var(--header-background);
   margin-bottom: 0;
@@ -143,7 +147,7 @@
     display: grid;
     grid-template-columns: 1fr 24px;
     align-items: center;
-    min-width: 213px;
+    min-width: 240px;
     cursor: pointer;
     margin-right: 14px;
 
@@ -382,7 +386,7 @@
     height: 16px;
     color: var(--link-color);
     display: inline-block;
-    background: url("../../react-components/src/ManageCollection/warning-alert.svg")
+    background: url("./images/warning-alert.svg")
       no-repeat;
     background-size: contain;
   }
@@ -780,5 +784,15 @@
     text-decoration: underline;
     color: var(--input-background-color);
     margin: 0 3px;
+  }
+}
+
+.ui.popup.help {
+  background-color: var(--text-color) !important;
+  color: var(--header-background);
+  max-width: 355px;
+
+  &:before {
+    background-color: var(--text-color) !important;
   }
 }

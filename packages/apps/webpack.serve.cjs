@@ -8,35 +8,29 @@ const { merge } = require('webpack-merge');
 
 const baseConfig = require('./webpack.base.cjs');
 
-require('dotenv-defaults').config();
-
 module.exports = merge(
   baseConfig(__dirname, 'development'),
   {
     devServer: {
       open: false,
-      port: 3000,
+      port: 3003,
       proxy: {
-        '/health': {
+        '/Offers': {
           changeOrigin: true,
-          target: process.env.UNIQUE_API
+          target: 'https://market-api-opal.unique.network'
         },
-        '/mint': {
+        '/Trades': {
           changeOrigin: true,
-          target: process.env.UNIQUE_API
+          target: 'https://market-api-opal.unique.network'
         },
-        '/offers': {
+        '/OnHold': {
           changeOrigin: true,
-          target: process.env.UNIQUE_API
+          target: 'https://market-api-opal.unique.network'
         },
-        '/trades': {
+        /* 'https://market-api-opal.unique.network': {
           changeOrigin: true,
-          target: process.env.UNIQUE_API
-        },
-        [process.env.UNIQUE_API]: {
-          changeOrigin: true,
-          target: process.env.UNIQUE_API
-        },
+          target: 'https://market-api-opal.unique.network'
+        }, */
         [process.env.WHITE_LABEL_URL]: {
           changeOrigin: true,
           target: process.env.WHITE_LABEL_URL

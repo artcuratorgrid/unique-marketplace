@@ -8,12 +8,10 @@ import type { NftCollectionInterface } from '@polkadot/react-hooks/useCollection
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Header from 'semantic-ui-react/dist/commonjs/elements/Header/Header';
 
-import envConfig from '@polkadot/apps-config/envConfig';
 import { OpenPanelType } from '@polkadot/apps-routing/types';
 import { Table, TransferModal } from '@polkadot/react-components';
-import { useCollections } from '@polkadot/react-hooks';
+import {useCollections, useIsMountedRef} from '@polkadot/react-hooks';
 
-import CollectionSearch from '../../components/CollectionSearch';
 import NftCollectionCard from '../../components/NftCollectionCard';
 
 interface NftWalletProps {
@@ -28,16 +26,14 @@ interface NftWalletProps {
   shouldUpdateTokens?: string;
 }
 
-const { canAddCollections } = envConfig;
-
-function NftWallet ({ account, addCollection, collections, openPanel, removeCollectionFromList, setCollections, setOpenPanel, setShouldUpdateTokens, shouldUpdateTokens }: NftWalletProps): React.ReactElement {
+function NftWallet ({ account, collections, openPanel, removeCollectionFromList, setCollections, setShouldUpdateTokens }: NftWalletProps): React.ReactElement {
   const [openTransfer, setOpenTransfer] = useState<{ collection: NftCollectionInterface, tokenId: string, balance: number } | null>(null);
   const [selectedCollection, setSelectedCollection] = useState<NftCollectionInterface>();
   const [canTransferTokens] = useState<boolean>(true);
   const [tokensSelling, setTokensSelling] = useState<{ [collectionId: string]: string[] }>({});
   const currentAccount = useRef<string | null | undefined>();
   const { getHoldByMe, getOffers, myHold, offers, presetCollections } = useCollections();
-  const cleanup = useRef<boolean>(false);
+  const mountedRef = useIsMountedRef();
 
   const fetchOffersForCollections = useCallback(() => {
     if (account && collections?.length) {
@@ -71,18 +67,14 @@ function NftWallet ({ account, addCollection, collections, openPanel, removeColl
   const addMintCollectionToList = useCallback(async () => {
     const firstCollections: NftCollectionInterface[] = await presetCollections();
 
-    if (cleanup.current) {
-      return;
-    }
-
-    setCollections((prevCollections: NftCollectionInterface[]) => {
+    mountedRef.current && setCollections((prevCollections: NftCollectionInterface[]) => {
       if (JSON.stringify(firstCollections) !== JSON.stringify(prevCollections)) {
         return [...firstCollections];
       } else {
         return prevCollections;
       }
     });
-  }, [setCollections, presetCollections]);
+  }, [mountedRef, setCollections, presetCollections]);
 
   const removeCollection = useCallback((collectionToRemove: string) => {
     if (selectedCollection && selectedCollection.id === collectionToRemove) {
@@ -96,14 +88,14 @@ function NftWallet ({ account, addCollection, collections, openPanel, removeColl
     setOpenTransfer({ balance, collection, tokenId });
   }, []);
 
-  const updateTokens = useCallback((collectionId) => {
-    setShouldUpdateTokens(collectionId);
-  }, [setShouldUpdateTokens]);
+  const updateTokens = useCallback((collectionId: string) => {
+    mountedRef.current && setShouldUpdateTokens(collectionId);
+  }, [mountedRef, setShouldUpdateTokens]);
 
   useEffect(() => {
     currentAccount.current = account;
-    setShouldUpdateTokens('all');
-  }, [account, setShouldUpdateTokens]);
+    mountedRef.current && setShouldUpdateTokens('all');
+  }, [account, mountedRef, setShouldUpdateTokens]);
 
   useEffect(() => {
     void addMintCollectionToList();
@@ -117,12 +109,6 @@ function NftWallet ({ account, addCollection, collections, openPanel, removeColl
     filterTokensFromOffers();
   }, [filterTokensFromOffers]);
 
-  useEffect(() => {
-    return () => {
-      cleanup.current = true;
-    };
-  }, []);
-
   return (
     <div className={`nft-wallet unique-card ${openPanel || ''}`}>
       { (openPanel === 'tokens' || openPanel === 'balances') && (
@@ -132,16 +118,6 @@ function NftWallet ({ account, addCollection, collections, openPanel, removeColl
         >
           My tokens
         </Header>
-      )}
-      { canAddCollections && (
-        <>
-          <CollectionSearch
-            account={account}
-            addCollection={addCollection}
-            collections={collections}
-          />
-          <br />
-        </>
       )}
       <Header as='h3'>
         My collections
@@ -177,7 +153,6 @@ function NftWallet ({ account, addCollection, collections, openPanel, removeColl
           account={account}
           closeModal={setOpenTransfer.bind(null, null)}
           collection={openTransfer.collection}
-          reFungibleBalance={openTransfer.balance}
           tokenId={openTransfer.tokenId}
           updateTokens={updateTokens}
         />

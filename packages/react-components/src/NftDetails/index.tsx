@@ -6,7 +6,6 @@ import './styles.scss';
 import BN from 'bn.js';
 import React, {useCallback, useEffect, useState} from 'react';
 import {useLocation} from 'react-router-dom';
-// import Form from 'semantic-ui-react/dist/commonjs/collections/Form';
 import Button from 'semantic-ui-react/dist/commonjs/elements/Button';
 import Header from 'semantic-ui-react/dist/commonjs/elements/Header';
 import Image from 'semantic-ui-react/dist/commonjs/elements/Image';
@@ -16,14 +15,13 @@ import envConfig from '@polkadot/apps-config/envConfig';
 import {TransferModal} from '@polkadot/react-components';
 import formatPrice from '@polkadot/react-components/util/formatPrice';
 import {useBalance, useDecoder, useMarketplaceStages, useSchema} from '@polkadot/react-hooks';
-
+import {subToEth} from '@polkadot/react-hooks/utils';
 import BuySteps from './BuySteps';
 import SaleSteps from './SaleSteps';
 import SetPriceModal from './SetPriceModal';
 import {onRamp} from '@polkadot/apps/util/ramp';
-// import { Grid } from 'semantic-ui-react';
 
-const { kusamaDecimals, showMarketActions } = envConfig;
+const { kusamaDecimals } = envConfig;
 
 interface NftDetailsProps {
   account: string;
@@ -34,20 +32,22 @@ function NftDetails ({ account }: NftDetailsProps): React.ReactElement<NftDetail
   const tokenId = query.get('tokenId') || '';
   const collectionId = query.get('collectionId') || '';
   const [showTransferForm, setShowTransferForm] = useState<boolean>(false);
+  const [ethAccount, setEthAccount] = useState<string>();
   const [lowKsmBalanceToBuy, setLowKsmBalanceToBuy] = useState<boolean>(false);
   const [kusamaFees, setKusamaFees] = useState<BN | null>(null);
   const { balance } = useBalance(account);
   const { hex2a } = useDecoder();
-  const { attributes, collectionInfo, reFungibleBalance, tokenUrl } = useSchema(account, collectionId, tokenId);
+  const { attributes, collectionInfo, tokenUrl } = useSchema(account, collectionId, tokenId);
   const [tokenPriceForSale, setTokenPriceForSale] = useState<string>('');
-  const { cancelStep, deposited, escrowAddress, formatKsmBalance, getFee, getKusamaTransferFee, kusamaAvailableBalance, readyToAskPrice, sendCurrentUserAction, setPrice, setReadyToAskPrice, tokenAsk, tokenDepositor, tokenInfo, transferStep } = useMarketplaceStages(account, collectionInfo, tokenId);
+  const { cancelStep, deposited, escrowAddress, formatKsmBalance, getKusamaTransferFee, getRevertedFee, kusamaAvailableBalance, readyToAskPrice, sendCurrentUserAction, setPrice, setReadyToAskPrice, tokenAsk, tokenDepositor, tokenInfo, transferStep } = useMarketplaceStages(account, ethAccount, collectionInfo, tokenId);
 
-  const uOwnIt = tokenInfo?.Owner?.toString() === account || (tokenAsk && tokenAsk.owner === account);
-  const uSellIt = tokenAsk && tokenAsk.owner === account;
-  const isOwnerEscrow = !!(!uOwnIt && tokenInfo && tokenInfo.Owner && tokenInfo.Owner.toString() === escrowAddress && tokenDepositor && (tokenAsk && tokenAsk.owner !== account));
-  // const lowBalanceToBuy = !!(buyFee && !balance?.free.gte(buyFee));
-  // sponsoring is enabled
-  // const lowBalanceToSell = !!(saleFee && !balance?.free.gte(saleFee));
+  const uSellIt = tokenAsk && tokenAsk?.ownerAddr.toLowerCase() === ethAccount && tokenAsk.flagActive === '1';
+  const uOwnIt = tokenInfo?.owner?.Substrate === account || tokenInfo?.owner?.Ethereum?.toLowerCase() === ethAccount || uSellIt;
+
+  const tokenPrice = (tokenAsk?.flagActive === '1' && tokenAsk?.price && tokenAsk?.price.gtn(0)) ? tokenAsk.price : 0;
+  const isOwnerEscrow = !!(!uOwnIt && tokenInfo && tokenInfo.owner && tokenInfo.owner.toString() === escrowAddress && tokenDepositor && (tokenAsk && (tokenAsk.ownerAddr.toLowerCase() !== ethAccount || tokenAsk.flagActive !== '1')));
+
+  console.log('collectionInfo', collectionInfo, 'tokenAsk', tokenAsk, 'tokenPrice', tokenPrice, 'tokenInfo', tokenInfo, 'ethAccount', ethAccount);
 
   const goBack = useCallback((e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
@@ -60,7 +60,7 @@ function NftDetails ({ account }: NftDetailsProps): React.ReactElement<NftDetail
     const priceRight = new BN(parseFloat(`0.${parts[1]}`) * Math.pow(10, kusamaDecimals));
     const price = priceLeft.add(priceRight);
 
-    setPrice(price.toString());
+    setPrice(price);
   }, [setPrice, tokenPriceForSale]);
 
   const onTransferSuccess = useCallback(() => {
@@ -72,7 +72,7 @@ function NftDetails ({ account }: NftDetailsProps): React.ReactElement<NftDetail
     setReadyToAskPrice(false);
 
     setTimeout(() => {
-      sendCurrentUserAction('ASK_PRICE_FAIL');
+      sendCurrentUserAction('ASK_NOT_FILLED');
     }, 1000);
   }, [setReadyToAskPrice, sendCurrentUserAction]);
 
@@ -83,17 +83,37 @@ function NftDetails ({ account }: NftDetailsProps): React.ReactElement<NftDetail
 
       if (kusamaFees) {
         setKusamaFees(kusamaFees);
-        const balanceNeeded = tokenAsk.price.add(getFee(tokenAsk.price)).add(kusamaFees.muln(2));
+        const balanceNeeded = tokenAsk.price.add(kusamaFees.muln(2));
         const isLow = !!kusamaAvailableBalance?.add(deposited || new BN(0)).lte(balanceNeeded);
 
         setLowKsmBalanceToBuy(isLow);
       }
     }
-  }, [deposited, escrowAddress, kusamaAvailableBalance, getFee, getKusamaTransferFee, tokenAsk]);
+  }, [deposited, escrowAddress, kusamaAvailableBalance, getKusamaTransferFee, tokenAsk]);
 
   const getMarketPrice = useCallback((price: BN) => {
-    return formatPrice(formatKsmBalance(new BN(price).add(getFee(price))));
-  }, [formatKsmBalance, getFee]);
+    return formatPrice(formatKsmBalance(price.sub(getRevertedFee(price))));
+  }, [formatKsmBalance, getRevertedFee]);
+
+  const onCancel = useCallback(() => {
+    sendCurrentUserAction('CANCEL');
+  }, [sendCurrentUserAction]);
+
+  const onBuy = useCallback(() => {
+    sendCurrentUserAction('BUY');
+  }, [sendCurrentUserAction]);
+
+  const toggleTransferForm = useCallback(() => {
+    setShowTransferForm(!showTransferForm);
+  }, [showTransferForm]);
+
+  const onSell = useCallback(() => {
+    sendCurrentUserAction('SELL');
+  }, [sendCurrentUserAction]);
+
+  const closeTransferModal = useCallback(() => {
+    setShowTransferForm(false);
+  }, []);
 
   useEffect(() => {
     void ksmFeesCheck();
@@ -101,39 +121,41 @@ function NftDetails ({ account }: NftDetailsProps): React.ReactElement<NftDetail
 
   const requireMoreKSM = (!uOwnIt && !transferStep && tokenAsk) && lowKsmBalanceToBuy;
 
+  useEffect(() => {
+    if (account) {
+      setEthAccount(subToEth(account).toLowerCase());
+    }
+  }, [account]);
+
   return (
     <div className='toke-details'>
-      <a
+      <div
         className='go-back'
-        href='/'
-        onClick={goBack}
       >
-        <svg fill='none'
-             height='16'
-             viewBox='0 0 16 16'
-             width='16'
-             xmlns='http://www.w3.org/2000/svg'>
-          <path d='M13.5 8H2.5'
-                stroke='var(--card-link-color)'
-                strokeLinecap='round'
-                strokeLinejoin='round'
-          />
-          <path d='M7 3.5L2.5 8L7 12.5'
-                stroke='var(--card-link-color)'
-                strokeLinecap='round'
-                strokeLinejoin='round'
-          />
-        </svg>
-        back
-      </a>
+        <a
+          href='/'
+          onClick={goBack}
+        >
+          <svg fill='none'
+            height='16'
+            viewBox='0 0 16 16'
+            width='16'
+            xmlns='http://www.w3.org/2000/svg'>
+            <path d='M13.5 8H2.5'
+              stroke='var(--card-link-color)'
+              strokeLinecap='round'
+              strokeLinejoin='round'
+            />
+            <path d='M7 3.5L2.5 8L7 12.5'
+              stroke='var(--card-link-color)'
+              strokeLinecap='round'
+              strokeLinejoin='round'
+            />
+          </svg>
+          back
+        </a>
+      </div>
       <div className='token-info'>
-        { (!collectionInfo || (account && (!kusamaAvailableBalance || !balance))) && (
-          <Loader
-            active
-            className='load-info'
-            inline='centered'
-          />
-        )}
         <div className='token-info--row'>
           <div className='token-info--row--image'>
             { collectionInfo && (
@@ -144,13 +166,17 @@ function NftDetails ({ account }: NftDetailsProps): React.ReactElement<NftDetail
             )}
           </div>
           <div className='token-info--row--attributes'>
-            <Header as='h3' className={'token-header'}>
-              {collectionInfo && <span>{hex2a(collectionInfo.TokenPrefix)}</span>} #{tokenId}
+            <Header as='h3'>
+              {collectionInfo && <span>{hex2a(collectionInfo.tokenPrefix)}</span>} #{tokenId}
             </Header>
             { attributes && Object.values(attributes).length > 0 && (
               <div className='accessories'>
                 Attributes:
                 {Object.keys(attributes).map((attrKey) => {
+                  if (attrKey === 'ipfsJson') {
+                    return null;
+                  }
+
                   if (!Array.isArray(attributes[attrKey])) {
                     return <p key={attrKey}>{attrKey}: {attributes[attrKey]}</p>;
                   }
@@ -161,12 +187,13 @@ function NftDetails ({ account }: NftDetailsProps): React.ReactElement<NftDetail
                 })}
               </div>
             )}
-            { (tokenAsk && tokenAsk.price) && (
+            { !!tokenPrice && (
               <>
                 <Header as={'h2'}>
-                  {getMarketPrice(tokenAsk.price)} KSM
+                  {formatPrice(formatKsmBalance(tokenPrice))} KSM
                 </Header>
-                <p>Fee: {formatKsmBalance(getFee(tokenAsk.price))} KSM, Price: {formatKsmBalance(tokenAsk.price)} KSM</p>
+                {/* @todo - substrate commission from price - fixed? */}
+                <p>Fee: {formatKsmBalance(getRevertedFee(tokenPrice))} KSM, Price: {getMarketPrice(tokenPrice)} KSM</p>
                 {/* { (!uOwnIt && !transferStep && tokenAsk) && lowBalanceToBuy && (
                   <div className='warning-block'>Your balance is too low to pay fees. <a href='https://t.me/unique2faucetbot'
                     rel='noreferrer nooperer'
@@ -188,26 +215,25 @@ function NftDetails ({ account }: NftDetailsProps): React.ReactElement<NftDetail
               <Header as='h5'>The owner is Escrow</Header>
             )}
 
-            { (!uOwnIt && tokenInfo && tokenInfo.Owner && tokenInfo.Owner.toString() !== escrowAddress && !tokenAsk?.owner) && (
-              <Header as='h5'>The owner is {tokenInfo?.Owner?.toString()}</Header>
+            { (!uOwnIt && tokenInfo?.owner && tokenInfo.owner?.Ethereum !== escrowAddress && tokenAsk?.flagActive !== '1') && (
+              <Header as='h5'>The owner is {tokenInfo?.owner.Substrate || tokenInfo?.owner.Ethereum || ''}</Header>
             )}
 
-            { (!uOwnIt && tokenInfo && tokenInfo.Owner && tokenInfo.Owner.toString() === escrowAddress && tokenAsk?.owner) && (
-              <Header as='h5'>The owner is {tokenAsk?.owner.toString()}</Header>
+            { (!uOwnIt && tokenInfo && tokenInfo.owner && tokenInfo.owner.toString() === escrowAddress && tokenAsk?.ownerAddr && tokenAsk.flagActive) && (
+              <Header as='h5'>The owner is {tokenAsk?.ownerAddr}</Header>
             )}
             <div className='buttons'>
               { (uOwnIt && !uSellIt) && (
                 <Button
                   content='Transfer'
-                  onClick={setShowTransferForm.bind(null, !showTransferForm)}
+                  onClick={toggleTransferForm}
                 />
               )}
               {requireMoreKSM &&  <Button
                 content='Add KSM to wallet'
                 onClick={() => onRamp(account)}
               />}
-              {(!account && tokenAsk) && (
-
+              {(!account && !!tokenPrice) && (
                 <div>
                   <Button
                     content='Buy it'
@@ -215,59 +241,51 @@ function NftDetails ({ account }: NftDetailsProps): React.ReactElement<NftDetail
                     title='ass'
                   />
                   <p className='text-with-button'>Сonnect your wallet to make transactions</p>
-
                 </div>
               )}
-              {showMarketActions && (
-                <>
-                  { (!uOwnIt && !transferStep && tokenAsk && kusamaFees && !requireMoreKSM) && (
-                    <>
-                      <div className='warning-block'>A small Kusama Network transaction fee up to {formatKsmBalance(kusamaFees.muln(2))} KSM will be
-                        applied to the transaction</div>
-                      <Button
-                        content={`Buy it - ${formatKsmBalance(tokenAsk.price.add(getFee(tokenAsk.price)).add(kusamaFees.muln(2)))} KSM`}
-                        disabled={lowKsmBalanceToBuy}
-                        onClick={sendCurrentUserAction.bind(null, 'BUY')}
-                      />
-                    </>
-                  )}
-
-                  { (uOwnIt && !uSellIt) && (
+              <>
+                { (!uOwnIt && !transferStep && !!tokenPrice && kusamaFees) && (
+                  <>
+                    <div className='warning-block'>A small Kusama Network transaction fee up to {formatKsmBalance(kusamaFees.muln(2))} KSM will be
+                      applied to the transaction</div>
                     <Button
-                      content='Sell'
-                      onClick={sendCurrentUserAction.bind(null, 'SELL')}
+                      content={`Buy it - ${formatKsmBalance(tokenPrice.add(kusamaFees.muln(2)))} KSM`}
+                      disabled={lowKsmBalanceToBuy}
+                      onClick={onBuy}
                     />
-                  )}
-                  { (uSellIt && !transferStep) && (
-                    <Button
-                      content={
-                        <>
-                          Delist
-                          { cancelStep && (
-                            <Loader
-                              active
-                              inline='centered'
-                            />
-                          )}
-                        </>
-                      }
-                      onClick={sendCurrentUserAction.bind(null, 'CANCEL')}
-                    />
-                  )}
+                  </>
+                )}
 
-                  <p className='terms-conditions'>
-                    Please read our <a href='/assets/Artpool_Terms_and_Conditions.pdf' target='_blank'>Terms and Conditions</a> before purchasing NFTs, in making the purchase you are agreeing to them.
-                  </p>
-                </>
-              )}
+                { (uOwnIt && !uSellIt) && (
+                  <Button
+                    content='Sell'
+                    onClick={onSell}
+                  />
+                )}
+                { (uSellIt && !transferStep) && (
+                  <Button
+                    content={
+                      <>
+                        Delist
+                        { cancelStep && (
+                          <Loader
+                            active
+                            inline='centered'
+                          />
+                        )}
+                      </>
+                    }
+                    onClick={onCancel}
+                  />
+                )}
+              </>
             </div>
 
             { (showTransferForm && collectionInfo) && (
               <TransferModal
                 account={account}
-                closeModal={setShowTransferForm.bind(null, false)}
+                closeModal={closeTransferModal}
                 collection={collectionInfo}
-                reFungibleBalance={reFungibleBalance}
                 tokenId={tokenId}
                 updateTokens={onTransferSuccess}
               />
@@ -278,7 +296,13 @@ function NftDetails ({ account }: NftDetailsProps): React.ReactElement<NftDetail
             { !!(transferStep && transferStep >= 4) && (
               <BuySteps step={transferStep - 3} />
             )}
-
+            { (!collectionInfo || (account && (!kusamaAvailableBalance || !balance))) && (
+              <Loader
+                active
+                className='load-info'
+                inline='centered'
+              />
+            )}
           </div>
         </div>
       </div>
