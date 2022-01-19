@@ -2644,6 +2644,7 @@ __metadata:
     "@polkadot/react-params": ^0.83.2-28
     "@polkadot/react-query": ^0.83.2-28
     "@polkadot/react-signer": ^0.83.2-28
+    "@ramp-network/ramp-instant-sdk": ^3.0.0
     "@sentry/react": ^6.15.0
     "@sentry/tracing": ^6.15.0
     "@types/punycode": ^2.1.0
@@ -3391,6 +3392,15 @@ __metadata:
   version: 1.1.0
   resolution: "@protobufjs/utf8@npm:1.1.0"
   checksum: f9bf3163d13aaa3b6f5e6fbf37a116e094ea021c0e1f2a7ccd0e12a29e2ce08dafba4e8b36e13f8ed7397e1591610ce880ed1289af4d66cf4ace8a36a9557278
+  languageName: node
+  linkType: hard
+
+"@ramp-network/ramp-instant-sdk@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "@ramp-network/ramp-instant-sdk@npm:3.0.0"
+  dependencies:
+    body-scroll-lock: ^2.6.4
+  checksum: fb9965f933df1cad7757f653f57219d61cbfbb1ca83f01fa25d07a3cfff5c163eb32556dd98b4c8138ced2c594bae542dae382896e89e1b2adf614b6a61d805a
   languageName: node
   linkType: hard
 
@@ -6305,6 +6315,13 @@ __metadata:
     raw-body: 2.4.2
     type-is: ~1.6.18
   checksum: 9197a300a6580b8723c7b6b1e22cebd5ba47cd4a6fd45c153350efcde79293869ddee8d17d95fb52724812d649d89d62775faab072608d3243a0cbb00582234e
+  languageName: node
+  linkType: hard
+
+"body-scroll-lock@npm:^2.6.4":
+  version: 2.7.1
+  resolution: "body-scroll-lock@npm:2.7.1"
+  checksum: 7a6b57b9315dad3639ac5aa781ed25c2275a53b3aa1527a580eaaf17096ca5c93293c99c2d12ffc92a11388ac7004c8aa943ac9c356717a393727c9216e183e6
   languageName: node
   linkType: hard
 
