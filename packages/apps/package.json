@@ -32,6 +32,7 @@
     "@polkadot/react-params": "^0.83.2-28",
     "@polkadot/react-query": "^0.83.2-28",
     "@polkadot/react-signer": "^0.83.2-28",
+    "@ramp-network/ramp-instant-sdk": "^3.0.0",
     "@sentry/react": "^6.15.0",
     "@sentry/tracing": "^6.15.0",
     "punycode": "^2.1.1",
