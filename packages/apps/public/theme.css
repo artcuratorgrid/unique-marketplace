@@ -11,6 +11,43 @@
   --width-half: 875px;
 }
 
+@font-face {
+  font-family: 'Replica';
+  src: url('/fonts/Replica/Replica-Regular.eot');
+  src: url('/fonts/Replica/Replica-Regular.eot?#iefix') format('embedded-opentype'),
+  url('/fonts/Replica/Replica-Regular.woff2') format('woff2'),
+  url('/fonts/Replica/Replica-Regular.woff') format('woff'),
+  url('/fonts/Replica/Replia-Regular.ttf') format('truetype'),
+  url('/fonts/Replica/Replica-Regular.svg#Replica-Regular') format('svg');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Replica';
+  src: url('/fonts/Replica/Replica-Light.eot');
+  src: url('/fonts/Replica/Replica-Light.eot?#iefix') format('embedded-opentype'),
+  url('/fonts/Replica/Replica-Light.woff2') format('woff2'),
+  url('/fonts/Replica/Replica-Light.woff') format('woff'),
+  url('/fonts/Replica/Replica-Light.ttf') format('truetype'),
+  url('/fonts/Replica/Replica-Light.svg#Replica-Light') format('svg');
+  font-weight: lighter;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Replica';
+  src: url('/fonts/Replica/Replica-Bold.eot');
+  src: url('/fonts/Replica/Replica-Bold.eot?#iefix') format('embedded-opentype'),
+  url('/fonts/Replica/Replica-Bold.woff2') format('woff2'),
+  url('/fonts/Replica/Replica-Bold.woff') format('woff'),
+  url('/fonts/Replica/Replica-Bold.ttf') format('truetype'),
+  url('/fonts/Replica/Replica-Bold.svg#Replica-Bold') format('svg');
+  font-weight: bold;
+  font-style: normal;
+}
+
+/*
 [data-theme="Unique"] {
   --white-color: #fff;
   --black-color: #000;
@@ -226,3 +263,92 @@
   --modal-text-color: white;
   --color-checkbox: white;
 }
+
+*/
+
+[data-theme="Artpool"] {
+  --white-color: #fff;
+  --black-color: #000;
+  --border-color: #ecec   ec;
+  --error-color: #ff6335;
+  --error-color-dark: #E65E35 ;
+  --success-color: #93ff35;
+  --divider-color: #f5f5f5;
+  --tabs-color: #81858e;
+  --table-row-hover: #eef0f7;
+
+  --gap: 16px;
+  --bradius: 4px;
+  --max-width: 1366px;
+
+  --font-roboto: "Roboto", Frutiger, "Frutiger Linotype", "Dejavu Sans",
+  "Helvetica Neue", Arial, sans-serif;
+
+  --font-raleway: "Raleway", Frutiger, "Frutiger Linotype", "Dejavu Sans",
+  "Helvetica Neue", Arial, sans-serif;
+
+  --font-inter: "Inter", Frutiger, "Frutiger Linotype", "Dejavu Sans",
+  "Helvetica Neue", Arial, sans-serif;
+
+  --link-color: #6F32FF;
+  --link-light-color: #CAB8FF;
+  --bg-page:#F6F6F6;
+  --header-background: #FFFFFF;
+  --header-text-color: #000000;
+  --sub-header-color: #000;
+  --sub-header-font-size: 14px;
+  --sub-header-text-transform: #040b1d;
+  --menu-text-transform: none;
+  --menu-font-size: 16px;
+  --text-color: #000;
+  --title-color: #040b1d;
+  --button-color: #6F32FF;
+  --button-background-hover: #F5FCFF;
+  --button-background-active: #6F32FF;
+  --input-background-color: #ffffff;
+  --input-border-color-hover: #e1e1e1;
+  --input-border-color-outline: #cccccc;
+  --input-background-disabled-color: #fafafa;
+  --input-placeholder-search-color: #81858E;
+  --input-text-color: #040b1d;
+  --max-header-width: 1466px;
+  --card-border-color: #ececec;
+  --card-background: #ffffff;
+  --card-shadow: rgba(0, 0, 0, 0.08);
+  --card-text-color: #000;
+  --card-link-color: #6F32FF;
+  --account-selector-background: #f9faff;
+  --account-selector-name-color: #000;
+  --account-selector-address-color: #000;
+  --dropdown-scrollbar-color: #000;
+  --modal-border-color: transparent;
+  --modal-text-color: #000;
+  --color-checkbox: #000;
+
+
+
+  --acg-purple-50: #F1E8FF;
+  --acg-purple-200: #CAB8FF;
+  --acg-purple-500: #6F32FF;
+  --acg-green: #aaff80;
+
+  --acg-blue:#CBFFFF;
+  --acg-yellow:#FBF563;
+  --acg-orange:#DD9768;
+  --acg-pink:#E177FA;
+
+  --acg-neutral-50: #F6F6F6;
+  --acg-neutral-100: #F1F1F1;
+  --acg-neutral-200: #EBEBEB;
+  --acg-neutral-300: #E6E6E6;
+  --acg-neutral-400: #CCCCCC;
+  --acg-neutral-500: #999999;
+  --acg-neutral-600: #707070;
+  --acg-neutral-700: #5D5D5D;
+  --acg-neutral-800: #3E3E3E;
+  --acg-neutral-900: #1D1D1D;
+
+  --font-replica: "Replica";
+}
+
+

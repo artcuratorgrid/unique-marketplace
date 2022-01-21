@@ -15,7 +15,7 @@ import { settings } from '@polkadot/ui-settings';
 import envConfig from '@polkadot/apps-config/envConfig';
 
 import Apps from './Apps';
-import { Themes, uniqueTheme } from './themes';
+import { artpoolTheme, Themes } from './themes';
 import WindowDimensions from './WindowDimensions';
 
 const { uniqueSubstrateApi } = envConfig;
@@ -30,9 +30,9 @@ function createTheme ({ uiTheme }: { uiTheme: string }): ThemeDef {
   });
 
   document && document.documentElement &&
-    document.documentElement.setAttribute('data-theme', validTheme ? validTheme.theme : 'Unique');
+    document.documentElement.setAttribute('data-theme', validTheme ? validTheme.theme : 'Artpool');
 
-  return validTheme || uniqueTheme;
+  return validTheme || artpoolTheme;
 }
 
 function Root ({ store }: Props): React.ReactElement<Props> {

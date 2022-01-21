@@ -3,28 +3,29 @@
 
 import './apps.scss';
 
-import type { OpenPanelType, Route } from '@polkadot/apps-routing/types';
-import type { BareProps as Props, ThemeDef } from '@polkadot/react-components/types';
+import {OpenPanelType, Route} from '@polkadot/apps-routing/types';
+import {BareProps as Props, ThemeDef} from '@polkadot/react-components/types';
 
-import React, { Suspense, useContext, useMemo, useState } from 'react';
-import { Link, NavLink, useLocation } from 'react-router-dom';
+import React, {Suspense, useContext, useMemo, useState} from 'react';
+import {Link, NavLink, useLocation} from 'react-router-dom';
 import Menu from 'semantic-ui-react/dist/commonjs/collections/Menu';
 import Loader from 'semantic-ui-react/dist/commonjs/elements/Loader';
-import { ThemeContext } from 'styled-components';
+import {ThemeContext} from 'styled-components';
 
 import NotFound from '@polkadot/apps/NotFound';
 import Status from '@polkadot/apps/Status';
-import { useTranslation } from '@polkadot/apps/translate';
-import { getSystemChainColor } from '@polkadot/apps-config';
+import {useTranslation} from '@polkadot/apps/translate';
+import {getSystemChainColor} from '@polkadot/apps-config';
 import createRoutes from '@polkadot/apps-routing';
-import { AccountSelector, ErrorBoundary, StatusContext } from '@polkadot/react-components';
+import {AccountSelector, ErrorBoundary, StatusContext} from '@polkadot/react-components';
 import PageNotFound from '@polkadot/react-components/PageNotFound';
 import GlobalStyle from '@polkadot/react-components/styles';
-import { useApi } from '@polkadot/react-hooks';
+import {useApi} from '@polkadot/react-hooks';
 import Signer from '@polkadot/react-signer';
 
 import infoSvg from '../src/images/info.svg';
 import BalancesHeader from './BalancesHeader';
+import Footer from './Footer';
 import ManageAccounts from './ManageAccounts';
 import ManageBalances from './ManageBalances';
 import MobileAccountSelector from './MobileAccountSelector';
@@ -100,16 +101,16 @@ function Apps ({ className = '' }: Props): React.ReactElement<Props> {
                 >
                   { theme.logo && (
                     <Menu.Item
-                      active={location.pathname === '/'}
-                      as={NavLink}
+                      href={'https://www.artpool.xyz/'}
+                      target='_blank'
                       className='app-logo'
                       icon={
                         <img
                           alt={`logo ${theme.theme}`}
                           src={theme.logo}
+                          className={'app-logo'}
                         />
                       }
-                      to='/'
                     />
                   )}
                   <Menu.Item
@@ -137,10 +138,9 @@ function Apps ({ className = '' }: Props): React.ReactElement<Props> {
                     to='/accounts'
                   />
                   <Menu.Item
-                    active={location.pathname === '/faq'}
-                    as={NavLink}
+                    href='http://help.artpool.xyz/ '
+                    target='_blank'
                     name='FAQ'
-                    to='/faq'
                   />
                 </Menu>
                 <div className='app-user'>
@@ -205,8 +205,7 @@ function Apps ({ className = '' }: Props): React.ReactElement<Props> {
                         <div className='error-message-info'>
                           <div>
                             <p> Some features are currently hidden and will only become available once you connect your wallet.  </p>
-                            <p> You can create new or add your existing substrate account on the
-                              <Link to='accounts'> <span> account page</span> </Link>
+                            <p> You can create new or add your existing substrate account on the <Link to='accounts'> <span> wallets page</span> </Link>
                             </p>
                           </div>
                         </div>
@@ -231,6 +230,7 @@ function Apps ({ className = '' }: Props): React.ReactElement<Props> {
                     }
                   </div>
                 </main>
+                <Footer />
               </Suspense>
             )}
           </ErrorBoundary>

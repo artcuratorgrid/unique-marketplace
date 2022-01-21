@@ -34,6 +34,7 @@
     "@polkadot/react-signer": "^0.83.2-28",
     "@sentry/react": "^6.15.0",
     "@sentry/tracing": "^6.15.0",
+    "i18next-scanner": "^3.1.0",
     "punycode": "^2.1.1",
     "query-string": "^7.0.1"
   },

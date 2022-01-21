@@ -4,8 +4,8 @@
 import './styles.scss';
 
 import BN from 'bn.js';
-import React, { useCallback, useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import React, {useCallback, useEffect, useState} from 'react';
+import {useLocation} from 'react-router-dom';
 // import Form from 'semantic-ui-react/dist/commonjs/collections/Form';
 import Button from 'semantic-ui-react/dist/commonjs/elements/Button';
 import Header from 'semantic-ui-react/dist/commonjs/elements/Header';
@@ -13,13 +13,15 @@ import Image from 'semantic-ui-react/dist/commonjs/elements/Image';
 import Loader from 'semantic-ui-react/dist/commonjs/elements/Loader';
 
 import envConfig from '@polkadot/apps-config/envConfig';
-import { TransferModal } from '@polkadot/react-components';
+import {TransferModal} from '@polkadot/react-components';
 import formatPrice from '@polkadot/react-components/util/formatPrice';
-import { useBalance, useDecoder, useMarketplaceStages, useSchema } from '@polkadot/react-hooks';
+import {useBalance, useDecoder, useMarketplaceStages, useSchema} from '@polkadot/react-hooks';
 
 import BuySteps from './BuySteps';
 import SaleSteps from './SaleSteps';
 import SetPriceModal from './SetPriceModal';
+import {onRamp} from '@polkadot/apps/util/ramp';
+// import { Grid } from 'semantic-ui-react';
 
 const { kusamaDecimals } = envConfig;
 
@@ -117,6 +119,8 @@ function NftDetails ({ account }: NftDetailsProps): React.ReactElement<NftDetail
     void ksmFeesCheck();
   }, [ksmFeesCheck]);
 
+  const requireMoreKSM = (!uOwnIt && !transferStep && tokenAsk) && lowKsmBalanceToBuy;
+
   return (
     <div className='toke-details'>
       <div
@@ -156,7 +160,7 @@ function NftDetails ({ account }: NftDetailsProps): React.ReactElement<NftDetail
             )}
           </div>
           <div className='token-info--row--attributes'>
-            <Header as='h3'>
+            <Header as='h3' className={'token-header'}>
               {collectionInfo && <span>{hex2a(collectionInfo.TokenPrefix)}</span>} #{tokenId}
             </Header>
             { attributes && Object.values(attributes).length > 0 && (
@@ -184,8 +188,8 @@ function NftDetails ({ account }: NftDetailsProps): React.ReactElement<NftDetail
                     rel='noreferrer nooperer'
                     target='_blank'>Get testUNQ here</a></div>
                 )} */}
-                { (!uOwnIt && !transferStep && tokenAsk) && lowKsmBalanceToBuy && (
-                  <div className='warning-block'>Your balance is too low to buy</div>
+                { requireMoreKSM && (
+                    <div className='warning-block'>Your balance is too low to buy</div>
                 )}
               </>
             )}
@@ -214,6 +218,10 @@ function NftDetails ({ account }: NftDetailsProps): React.ReactElement<NftDetail
                   onClick={toggleTransferForm}
                 />
               )}
+              {requireMoreKSM &&  <Button
+                content='Add KSM to wallet'
+                onClick={() => onRamp(account)}
+              />}
               {(!account && tokenAsk) && (
 
                 <div>
@@ -227,7 +235,7 @@ function NftDetails ({ account }: NftDetailsProps): React.ReactElement<NftDetail
                 </div>
               )}
               <>
-                { (!uOwnIt && !transferStep && tokenAsk && kusamaFees) && (
+                { (!uOwnIt && !transferStep && tokenAsk && kusamaFees && !requireMoreKSM) && (
                   <>
                     <div className='warning-block'>A small Kusama Network transaction fee up to {formatKsmBalance(kusamaFees.muln(2))} KSM will be
                       applied to the transaction</div>
@@ -261,7 +269,12 @@ function NftDetails ({ account }: NftDetailsProps): React.ReactElement<NftDetail
                     onClick={onCancel}
                   />
                 )}
+                <p className='terms-conditions'>
+                  Please read our <a href='/assets/Artpool_Terms_and_Conditions.pdf' target='_blank'>Terms and Conditions</a> before purchasing NFTs, in making the purchase you are agreeing to them.
+                </p>
               </>
+                  )}
+              )}
             </div>
 
             { (showTransferForm && collectionInfo) && (
@@ -290,6 +303,60 @@ function NftDetails ({ account }: NftDetailsProps): React.ReactElement<NftDetail
           </div>
         </div>
       </div>
+
+      {/* TODO: SET THIS DINAMIC FOR THE ARTISTS
+
+      <div className='token-info-artist'>
+        <Grid>
+          <Grid.Row className='token-info-artist-row'>
+            <Grid.Column width={16}>
+              <p>These photographs are the very first NFTs released by the Norwegian artist Fredrik Tjaerandsen who is an artist with a fashion design background, making clothing an artform in its own right.</p>
+              <p>These images depict dynamic, performative latex garments during a rehearsal for the 2020 Fashion in Motion show at the Victoria & Albert Museum in London.</p>
+              <p>A silhouette, a sphere of color, inhabited, brings us to another level of consciousness: offering viewers the opportunity to immerse themselves in a color-filtered, protected world.</p>
+            </Grid.Column>
+          </Grid.Row>
+        </Grid>
+      </div>
+
+      <div className='token-info-artist'>
+        <Grid>
+          <Grid.Row className='token-info-artist-row'>
+            <Grid.Column width={4}>
+              <a target='blank' href='https://www.artcuratorgrid.com/users/fredrik-tjaerandsen/posts'>
+                <div className='artist-profile'>
+                  <div className='avatar'>
+                    <img alt='Fredrik Tjaerandsen' src='https://drbfkoztg80ia.cloudfront.net/607ac251c65b900004df4162/1618658073104-md.jpg' />
+                  </div>
+                  <div>
+                    <h3 className='artist-name'>Fredrik Tjaerandsen</h3>
+                    <p className='artist-location'>London, UK</p>
+                  </div>
+                </div>
+              </a>
+            </Grid.Column>
+            <Grid.Column width={1} />
+            <Grid.Column width={11}>
+              <div className='artist-biography'>
+                <h3 className='bio-header'>Biography</h3>
+                <div className='bio-text'>
+                  <p>
+                    Fredrik Tjærandsen is a Norwegian artist and designer based in London. His upbringing in rural Norway is a source of inspiration for his work, and his fascination with where identity originates is incredibly important to his work. Trained in visual art and fashion, his process is artistic, intuitive, and emotional: he is drawn to working with visuals that captivate his emotions or feelings in that moment.
+                  </p>
+                  <br />
+                  <p>
+                    Tjærandsen’s practice focuses on performance, motion and the body in relation to the space around it.
+                  </p>
+                  <br />
+                  <p>
+                    “My work explores connection and transitions of the mind. I’m fascinated with where identity originates. Previously in my work I explore wearable spheres which centred on examining early childhood memories. I wanted to explore the questions of how I become the person I am today. To do that, I played with the idea of transitional processes, which relate to the different way we perceive things. The spere itself serves a metaphor. When you’re inside it you feel as if you are in your own space, just like you are in your own mind, but when you are looking at it from the outside, your perspective is entirely different. I think of it as a visualisation of how we understand the world around us. How, if we transcend the border of our bubbles, we ultimately reach these moments of clarity in the here and now. “
+                  </p>
+                </div>
+              </div>
+            </Grid.Column>
+          </Grid.Row>
+        </Grid>
+      </div>
+      */}
       { readyToAskPrice && (
         <SetPriceModal
           closeModal={closeAskModal}
